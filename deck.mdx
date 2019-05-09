@@ -8,14 +8,14 @@ Coding Interview Exercise
 
 ---
 
-## Problem
+## 💢 Problem
 
 - Multiple search and replace in string:
 
 ```clike
 string ReplaceAll(
     string text,
-    (string, string)[] replacements
+    IEnumerable<(string, string)> replacements
 );
 ```
 
@@ -28,24 +28,24 @@ string ReplaceAll(
 import snippetBasic from 'raw-loader!./snippets/basic.cs';
 
 <CodeSurfer
-  title="Straightforward solution"
+  title="💡 Straightforward solution"
   code={snippetBasic}
   lang="clike"
   showNumbers={false}
   dark={true}
   steps={[
     { },
-    { lines: [1], notes: "About API: many candidates will use a hash map"},
-    { tokens: { 4: [0, 1, 2, 3, 4] }, notes: "About memory: string reallocation" },
-    { tokens: { 4: [2, 3, 4, 5, 6, 7, 8, 9] }, notes: "About I/Os: seeking in large strings" },
-    { range: [3, 4], notes: "About performance: O(n*m) complexity" },
+    { lines: [2], notes: "About API: many candidates will use a hash map"},
+    { tokens: { 5: [0, 1, 2, 3, 4] }, notes: "About memory: string reallocation" },
+    { tokens: { 5: [2, 3, 4, 5, 6, 7, 8, 9] }, notes: "About I/Os: seeking in large strings" },
+    { range: [4, 6], notes: "About performance: O(n*m) complexity" },
     { }
   ]}
 />
 
 ---
 
-## Possible follow-ups
+## 💭 Possible follow-ups
 
 - Memory:
   - In-place replacements (dead end)
@@ -58,7 +58,7 @@ import snippetBasic from 'raw-loader!./snippets/basic.cs';
 
 ---
 
-## Text pre-processing
+## 📑 Text pre-processing
 
 - Often suggested by candidates
   - Common solution: split by "word"
@@ -71,7 +71,7 @@ import snippetBasic from 'raw-loader!./snippets/basic.cs';
 
 ---
 
-## Forward-only streaming 1/2
+## ➡️ Forward-only streaming 1/2
 
 - New constraint:
   - Replacements in gigabytes strings
@@ -86,7 +86,7 @@ import snippetBasic from 'raw-loader!./snippets/basic.cs';
 import snippetStream from 'raw-loader!./snippets/stream.py';
 
 <CodeSurfer
-  title="Forward-only streaming 2/2"
+  title="➡️ Forward-only streaming 2/2"
   code={snippetStream}
   lang="python"
   showNumbers={false}
@@ -102,7 +102,11 @@ import snippetStream from 'raw-loader!./snippets/stream.py';
 
 ---
 
-## Pattern pre-processing
+## 🏷️ 3.0 marker here
+
+---
+
+## 🔎 Pattern pre-processing
 
 - New constraint:
   - Replacements list has lots of entries
@@ -113,7 +117,7 @@ import snippetStream from 'raw-loader!./snippets/stream.py';
 
 ---
 
-## Factorize lookups using tries
+## 🌴 Factorize lookups using tries
 
 <table width="100%">
     <tr>
@@ -130,7 +134,7 @@ import snippetStream from 'raw-loader!./snippets/stream.py';
 
 ---
 
-## Addressing ambiguities
+## 🔀 Addressing ambiguities
 
 - Input text: `"AAB"`, replacement: `"AB"` &raquo; `"X"`
 
@@ -143,7 +147,7 @@ Input | Pointer in tree
 
 ---
 
-## Aho-Corasick
+## ⛑️ Aho-Corasick
 
 - Fallback to longest suffix on failure
 - Example with MACHINE, CHINA & INO:
@@ -152,7 +156,7 @@ Input | Pointer in tree
 
 ---
 
-## Boyer-Moore 1/3
+## ⏩ Boyer-Moore 1/3
 
 Pattern | `AAAAAA`
 ---|---
@@ -161,7 +165,7 @@ Start at | <code>BBBBB<u>B</u>BBBB</code>
 
 ---
 
-## Boyer-Moore 2/3
+## ⏩ Boyer-Moore 2/3
 
 Action | Result
 ---|---
@@ -171,7 +175,7 @@ Possible candidate | <code>---<em>WIKIP</em><u>E</u>DIA</code>?
 
 ---
 
-## Boyer-Moore 3/3
+## ⏩ Boyer-Moore 3/3
 
 WIKIPEDIA
 
@@ -186,3 +190,5 @@ W | 8
 Any other character | 9
 
 ---
+
+## 🎡 Rabin-Karp

@@ -1,4 +1,5 @@
-string ReplaceAll(string text, (string, string)[] replacements)
+string ReplaceAll(string text,
+    IEnumerable<(string, string)> replacements)
 {
     foreach (var (search, replace) in replacements)
         text = text.Replace(search, replace);
