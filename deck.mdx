@@ -191,7 +191,7 @@ Ask candidates how to factorize redundant searches.
         <td>
             <p>NAME &raquo; Sami</p>
             <p>NUMBER &raquo; 17</p>
-            <p>EMAIL &raquo; sami@tou.il</p>
+            <p>EMAIL &raquo; sami@touil.fr</p>
         </td>
         <td>
             <img src="./assets/trie.png" />
@@ -251,10 +251,10 @@ Subject: `"AAB"`, replacement: `"AB"` &raquo; `"X"`
 
 Input | Pointer in tree
 ---|---
-<code><u>&nbsp;</u>AAB</code> | <img src="./assets/ambiguous1.png" />
-<code>&nbsp;<u>A</u>AB</code> | <img src="./assets/ambiguous2.png" />
-<code>&nbsp;A<u>A</u>B</code> | <img src="./assets/ambiguous1.png" />
-<code>&nbsp;AA<u>B</u></code> | <img src="./assets/ambiguous1.png" />
+<code><u>&nbsp;</u>AAB</code> | <img src="./assets/trie-ambiguous-1.png" />
+<code>&nbsp;<u>A</u>AB</code> | <img src="./assets/trie-ambiguous-2.png" />
+<code>&nbsp;A<u>A</u>B</code> | <img src="./assets/trie-ambiguous-1.png" />
+<code>&nbsp;AA<u>B</u></code> | <img src="./assets/trie-ambiguous-1.png" />
 
 ```notes
 Can be solved with backtracking or multiple cursors.
