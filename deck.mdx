@@ -28,17 +28,17 @@ string ReplaceAll(
 import snippetBasic from 'raw-loader!./snippets/basic.cs';
 
 <CodeSurfer
-  title="💡 Straightforward solution"
+  title="💡 Our very first solution"
   code={snippetBasic}
   lang="clike"
   showNumbers={false}
   dark={true}
   steps={[
-    { },
-    { lines: [2], notes: "About API: many candidates will use a hash map"},
-    { tokens: { 5: [0, 1, 2, 3, 4] }, notes: "About memory: string reallocation" },
-    { tokens: { 5: [2, 3, 4, 5, 6, 7, 8, 9] }, notes: "About I/Os: seeking in large strings" },
-    { range: [4, 6], notes: "About performance: O(n*m) complexity" },
+    { notes: "Should be done in less than 5 minutes, then discuss..." },
+    { lines: [2], notes: "...about API: many candidates will use a hash map"},
+    { tokens: { 5: [0, 1, 2, 3, 4] }, notes: "...about memory: multiple string reallocations" },
+    { tokens: { 5: [2, 3, 4, 5, 6, 7, 8, 9] }, notes: "...about I/Os: seeking across large ranges" },
+    { range: [4, 6], notes: "...about performance: O(n*m) complexity" },
     { }
   ]}
 />
@@ -55,6 +55,12 @@ import snippetBasic from 'raw-loader!./snippets/basic.cs';
   - Text pre-processing (Knuth-Morris-Pratt)
 - All-in-one:
   - Pattern pre-processing (many solutions)
+
+---
+
+## 📍 Your score is ~2.5
+
+(depending on discussion)
 
 ---
 
@@ -94,15 +100,18 @@ import snippetStream from 'raw-loader!./snippets/stream.py';
   steps={[
     { },
     { range: [2, 5], notes: "Prepare matching window with first characters from string" },
-    { lines: [7], notes: "Use placeholders to match tokens at end of string" },
-    { range: [9, 25], notes: "Outer loop now iterates over text, inner loop over search strings" },
+    { range: [7, 9], notes: "Outer loop iterates once over characters + tail to match patterns at end of string" },
+    { range: [12, 20], notes: "Inner loop iterates over patterns and flush queue on match" },
+    { range: [22, 25], notes: "Move matching window: enqueue next character & dequeuing non-matched one" },
     { notes: "...but still O(n*m) complexity!" }
   ]}
 />
 
 ---
 
-## 🏷️ 3.0 marker here
+## 📍️ Your score is ~3.0
+
+(depending on autonomy)
 
 ---
 

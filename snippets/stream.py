@@ -13,7 +13,7 @@ def replace_all(text_stream, replacements):
             if queue[0:len(search)] == search:
                 print replace
 
-                for i in range(len(search))
+                for i in range(len(search)):
                     queue.dequeue()
                     queue.enqueue(text_stream.read(1))
 
