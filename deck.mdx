@@ -1,6 +1,17 @@
 import { CodeSurfer } from "mdx-deck-code-surfer"
-import { Split } from 'mdx-deck/layouts'
-export { dark as theme } from 'mdx-deck/themes'
+import { Split } from "mdx-deck/layouts"
+import { dark } from "mdx-deck/themes"
+import { Notes } from "mdx-deck"
+export { components } from "mdx-deck-code-surfer"
+import vsDark from "prism-react-renderer/themes/vsDark"
+
+export const theme = {
+  ...dark,
+  codeSurfer: {
+    ...vsDark,
+    showNumbers: false
+  }
+}
 
 # String replacements
 
@@ -8,16 +19,20 @@ Coding Interview Exercise
 
 ---
 
+import Box from 'superbox'
+
 ## 💢 Problem
 
 - Multiple search and replace in string:
 
-```clike
-string ReplaceAll(
-    string text,
-    IEnumerable<(string, string)> replacements
-);
-```
+<Box align="left">
+  <code>
+    string ReplaceAll(<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;string text,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;IEnumerable&lt;(string, string)&gt; replacements<br />
+    );
+  </code>
+</Box>
 
 - Frequent questions:
   - Overlaps e.g. `NAME` & `LASTNAME`
@@ -25,23 +40,24 @@ string ReplaceAll(
 
 ---
 
-import snippetBasic from 'raw-loader!./snippets/basic.cs';
+```clike
+// Our very first solution
 
-<CodeSurfer
-  title="💡 Our very first solution"
-  code={snippetBasic}
-  lang="clike"
-  showNumbers={false}
-  dark={true}
-  steps={[
-    { notes: "Should be done in less than 5 minutes, then discuss..." },
-    { lines: [2], notes: "...about API: many candidates will use a hash map"},
-    { tokens: { 5: [0, 1, 2, 3, 4] }, notes: "...about memory: multiple string reallocations" },
-    { tokens: { 5: [2, 3, 4, 5, 6, 7, 8, 9] }, notes: "...about I/Os: seeking across large ranges" },
-    { range: [4, 6], notes: "...about performance: O(n*m) complexity" },
-    { }
-  ]}
-/>
+string ReplaceAll(string text,
+    IEnumerable<(string, string)> replacements)
+{
+    foreach (var (search, replace) in replacements)
+        text = text.Replace(search, replace);
+ 
+    return text;
+}
+----
+* > Should be done in less than 5 minutes, then discuss...
+4 > ...about API: many candidates will use a hash map
+7[0:4] > ...about memory: multiple string reallocations
+7[2:9] > ...about I/Os: seeking across large ranges
+6:8 > ...about performance: O(n*m) complexity
+```
 
 ---
 
@@ -77,7 +93,7 @@ import snippetBasic from 'raw-loader!./snippets/basic.cs';
 
 ---
 
-## ➡️ Forward-only streaming 1/2
+## ➡️ Forward-only streaming
 
 - New constraint:
   - Replacements in gigabytes strings
@@ -89,23 +105,47 @@ import snippetBasic from 'raw-loader!./snippets/basic.cs';
 
 ---
 
-import snippetStream from 'raw-loader!./snippets/stream.py';
+```python
+# Forward-only streaming
 
-<CodeSurfer
-  title="➡️ Forward-only streaming 2/2"
-  code={snippetStream}
-  lang="python"
-  showNumbers={false}
-  dark={true}
-  steps={[
-    { },
-    { range: [2, 5], notes: "Prepare matching window with first characters from string" },
-    { range: [7, 9], notes: "Outer loop iterates once over characters + tail to match patterns at end of string" },
-    { range: [12, 20], notes: "Inner loop iterates over patterns and flush queue on match" },
-    { range: [22, 25], notes: "Move matching window: enqueue next character & dequeuing non-matched one" },
-    { notes: "...but still O(n*m) complexity!" }
-  ]}
-/>
+def replace_all(text, text_length, replacements):
+    buffer_length = max((len(search) for search, _ in replacements))
+    buffer = [text.read(1) for i in range(buffer_length)]
+
+    source_length = text_length + buffer_length
+    source = (text.read(1) or '\\0' for i in range(source_length))
+
+    for next_character in source:
+        match = None
+
+        for (search, replace) in replacements:
+            if "".join(buffer[0:len(search)]) == search:
+                match = (len(search), replace)
+
+        if match is None:
+            match = (1, buffer[0])
+
+        sys.stdout.write(match[1])
+
+        buffer = \\
+            buffer[match[0]:] + \\
+            [next_character] + \\
+            [next(source) for i in range(match[0] - 1)]
+----
+*
+4:5 > Prepare matching buffer of N characters (N = longuest search string)
+7:8 > Prepare source buffer with text characters + some extra to match at end of string
+10 > Outer loop iterates only once over source characters
+11:15 > Inner loop searches for a match and stores length + replacement value
+17:18 > Handle \"no match\" as a 1-character match replaced by itself
+20 > Output our best match
+22:25 > Shift matching buffer by the number of matched characters
+* > ...but complexity is still O(n*m)!
+```
+
+```notes
+Test
+```
 
 ---
 
@@ -143,9 +183,53 @@ import snippetStream from 'raw-loader!./snippets/stream.py';
 
 ---
 
+```js
+// Using a trie
+
+const replace_all = (text, root) => {
+  let current = root;
+  let pending = "";
+
+  for (let character of text) {
+    pending += character;
+
+    const next = current[character];
+
+    if (next === undefined) {
+      process.stdout.write(pending);
+
+      current = root;
+      pending = "";
+    } else if (next.value === undefined) {
+      current = next;
+    } else {
+      process.stdout.write(next.value);
+
+      current = root;
+      pending = "";
+    }
+  }
+}
+
+replace_all("abcdef", {
+  "a": { "b": { "value": "x" } },
+  "e": { "f": { "value": "y" } }
+});
+----
+*
+4:5 > Initialize cursor at root node
+7:10 > Iterate over text, save character and move to child node
+10:16 > Option 1: invalid transition, flush buffer and reset cursor
+10:18 > Option 2: valid transition but no replacement yet, move cursor
+10:24 > Option 3: replacement found, print it and reset cursor + buffer
+* > ...but we're not there yet! 🐞
+```
+
+---
+
 ## 🔀 Addressing ambiguities
 
-- Input text: `"AAB"`, replacement: `"AB"` &raquo; `"X"`
+Input text: `"AAB"`, replacement: `"AB"` &raquo; `"X"`
 
 Input | Pointer in tree
 ---|---
