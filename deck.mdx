@@ -34,8 +34,15 @@ Coding Interview Exercise
 </Box>
 
 - Frequent questions:
-  - Overlaps e.g. `NAME` & `LASTNAME`
-  - Known delimiters e.g. `$NAME`
+  - Overlaps e.g. `NAME` & `LASTNAME`?
+  - Known delimiters e.g. `$NAME`?
+  - Are regular expressions OK?
+
+---
+
+## 📍 Your score is 2.0
+
+(everyone needs a baseline)
 
 ---
 
@@ -156,7 +163,7 @@ def replace_all(text, text_length, replacements):
 
 ---
 
-## 🔎 Search pre-processing
+## 🔦 Search pre-processing
 
 - Replacements list has lots of entries
 - Our O(n*m) complexity would hurt
@@ -187,7 +194,7 @@ Ask candidates how to factorize redundant searches.
 
 ---
 
-```js
+```javascript
 // Using a trie
 
 const replace_all = (text, root) => {
@@ -258,7 +265,7 @@ Action | Backtrack 5 characters? 😢
 
 ---
 
-## ⛑️ Aho-Corasick
+## ⛑️ Aho-Corasick to the rescue
 
 - Fallback to longest suffix on failure
 - Example with MACHINE, CHINA & INOVATE
@@ -309,16 +316,17 @@ Process parent node. For each child node matching given string, search for longu
 
 ---
 
-## ⏩ Boyer-Moore 1/3
+## 🔎 Why reading everything?
 
-Search | `AAAAAA`
+Action | Result
 ---|---
+Search | `AAAAAA`
 Subject | `BBBBBBBBBB`
-Start at | <code>BBBBB<u>B</u>BBBB</code>
+Jump at offset 5 | <code>-----<u>B</u>BBBB</code>
 
 ---
 
-## ⏩ Boyer-Moore 2/3
+## 🏃 Boyer-Moore
 
 Action | Result
 ---|---
@@ -326,22 +334,39 @@ Search <code>WIKIPEDIA</code> in | <code>ENCYCLOPEDIA</code>
 Test offset `len("WIKIPEDIA") - 1` | <code>--------<u>E</u>DIA</code>
 Possible candidate | <code>---<em>WIKIP</em><u>E</u>DIA</code>?
 
----
+⬇️
 
-## ⏩ Boyer-Moore 3/3
-
-WIKIPEDIA
-
-Character | Jump offset
----|---
-I | 1
-D | 2
-E | 3
-P | 4
-K | 6
-W | 8
-Any other character | 9
+Character | I | D | E | P | K | W | Any other
+---|---|---|---|---|---|---|---
+Jump distance | 1 | 2 | 3 | 4 | 6 | 8 | 9
 
 ---
 
 ## 🎡 Rabin-Karp
+
+👷 FIXME
+
+---
+
+## 📍️ Your score is ~4.0
+
+(depending on topics covered)
+
+---
+
+## 🌌 Going further
+
+- Combining multiple algorithms
+- Globbing and regular expressions
+
+```notes
+grep uses Aho-Corasick & Boyer-Moore.
+```
+
+---
+
+## 🚦 Ready?
+
+```notes
+Shadow, reverse-shadow, chat about interviews.
+```
