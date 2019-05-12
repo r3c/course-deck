@@ -4,12 +4,12 @@ import { Split } from "mdx-deck/layouts"
 import { dark } from "mdx-deck/themes"
 import { Notes } from "mdx-deck"
 export { components } from "mdx-deck-code-surfer"
-import vsDark from "prism-react-renderer/themes/vsDark"
+import vsDarkPlus from "prism-react-renderer/themes/vsDarkPlus"
 
 export const theme = {
   ...dark,
   codeSurfer: {
-    ...vsDark,
+    ...vsDarkPlus,
     showNumbers: false
   }
 }
@@ -27,7 +27,7 @@ Coding Interview Exercise
 <Box align="left">
   <code>
     string ReplaceAll(<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;string text,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;string subject,<br />
     &nbsp;&nbsp;&nbsp;&nbsp;IEnumerable&lt;(string, string)&gt; replacements<br />
     );
   </code>
@@ -49,13 +49,13 @@ Coding Interview Exercise
 ```clike
 // Our very first solution
 
-string ReplaceAll(string text,
+string ReplaceAll(string subject,
     IEnumerable<(string, string)> replacements)
 {
     foreach (var (search, replace) in replacements)
-        text = text.Replace(search, replace);
+        subject = subject.Replace(search, replace);
  
-    return text;
+    return subject;
 }
 ----
 * > Should be done in less than 5 minutes, then discuss...
@@ -120,12 +120,12 @@ Suggest as an extension to candidates, ask what would break (seeking & reloading
 ```python
 # Forward-only streaming
 
-def replace_all(text, text_length, replacements):
+def replace_all(subject, subject_length, replacements, output):
     buffer_length = max((len(search) for search, _ in replacements))
-    buffer = [text.read(1) for i in range(buffer_length)]
+    buffer = [subject.read(1) for i in range(buffer_length)]
 
-    source_length = text_length + buffer_length
-    source = (text.read(1) or '\\0' for i in range(source_length))
+    source_length = subject_length + buffer_length
+    source = (subject.read(1) or '\\0' for i in range(source_length))
 
     for next_character in source:
         match = None
@@ -137,7 +137,7 @@ def replace_all(text, text_length, replacements):
         if match is None:
             match = (1, buffer[0])
 
-        sys.stdout.write(match[1])
+        output.write(match[1])
 
         buffer = \\
             buffer[match[0]:] + \\
@@ -146,7 +146,7 @@ def replace_all(text, text_length, replacements):
 ----
 *
 4:5 > Prepare matching buffer of N characters (N = longuest search string)
-7:8 > Prepare source buffer with text characters + some extra to match at end of string
+7:8 > Prepare source buffer with subject characters + some extra to match at end of string
 10 > Outer loop iterates only once over source characters
 11:15 > Inner loop searches for a match and stores length + replacement value
 17:18 > Handle \"no match\" as a 1-character match replaced by itself
@@ -197,34 +197,34 @@ Ask candidates how to factorize redundant searches.
 ```javascript
 // Using a trie
 
-const replace_all = (text, root) => {
+const replace_all = (subject, root, output) => {
   let current = root;
   let pending = "";
 
-  for (let character of text) {
+  for (let character of subject) {
     pending += character;
 
-    const next = current[character];
+    const next = current.childNodes[character];
 
     if (next === undefined) {
-      process.stdout.write(pending);
+      output.write(pending);
 
       current = root;
       pending = "";
     } else if (next.value === undefined) {
       current = next;
     } else {
-      process.stdout.write(next.value);
+      output.write(next.value);
 
       current = root;
       pending = "";
     }
   }
-}
+};
 ----
 *
 4:5 > Initialize cursor at root node
-7:10 > Iterate over text, save character and move to child node
+7:10 > Iterate over subject, save character and move to child node
 10:16 > Option 1: invalid transition, flush buffer and reset cursor
 10:18 > Option 2: valid transition but no replacement yet, move cursor
 10:24 > Option 3: replacement found, print it and reset cursor + buffer
@@ -232,14 +232,14 @@ const replace_all = (text, root) => {
 ```
 
 ```notes
-Options 1 and 3 have redundant code. Demo if possible.
+Options 1 and 3 have redundant code. Demo if possible. Write the list-to-trie transform as an alternative.
 ```
 
 ---
 
 ## 🔀 Addressing ambiguities
 
-Input text: `"AAB"`, replacement: `"AB"` &raquo; `"X"`
+Subject: `"AAB"`, replacement: `"AB"` &raquo; `"X"`
 
 Input | Pointer in tree
 ---|---
