@@ -1,10 +1,11 @@
-import Box from "superbox"
 import { CodeSurfer } from "mdx-deck-code-surfer"
 import { Split } from "mdx-deck/layouts"
 import { dark } from "mdx-deck/themes"
 import { Notes } from "mdx-deck"
-export { components } from "mdx-deck-code-surfer"
+import Box from "superbox"
 import vsDarkPlus from "prism-react-renderer/themes/vsDarkPlus"
+
+export { components } from "mdx-deck-code-surfer"
 
 export const theme = {
   ...dark,
@@ -16,7 +17,7 @@ export const theme = {
 
 # String replacements
 
-Coding Interview Exercise
+## Coding Interview Exercise
 
 ---
 
@@ -47,9 +48,11 @@ Coding Interview Exercise
 ---
 
 ```clike
-// Our very first solution
-
-string ReplaceAll(string subject,
+/// <Summary>
+/// Our very first string replacements solution.
+/// </Summary>
+string ReplaceAll(
+    string subject,
     IEnumerable<(string, string)> replacements)
 {
     foreach (var (search, replace) in replacements)
@@ -58,11 +61,12 @@ string ReplaceAll(string subject,
     return subject;
 }
 ----
-* > Should be done in less than 5 minutes, then discuss...
-4 > ...about API: many candidates will use a hash map
-7[0:4] > ...about memory: multiple string reallocations
-7[2:9] > ...about I/Os: seeking across large ranges
-6:8 > ...about performance: O(n*m) complexity
+* > Should take <= 5 minutes, then open discussion...
+5 > ...about API: many candidates will use a hash map
+8[0:4] > ...about memory: multiple string reallocations
+8[2:9] > ...about I/Os: seeking across large ranges
+7:9 > ...about performance: O(n*m) complexity
+*
 ```
 
 ---
@@ -92,9 +96,11 @@ Memory: deadend, I/O: transitional, Performance: Knuth-Morris-Pratt, All-in-one:
 
 ## 📑 Subject pre-processing
 
-- Split by word or introduce `$TOKEN` delimiters
 - Knuth-Morris-Pratt doesn't fit 1h interview
-- Can open hash map usage discussions
+- Or requires changing constraints:
+  - Split by word
+  - Introduce `$TOKEN` delimiters
+  - Can open hash map usage discussions
 - Not worth spending time here otherwise
 
 ```notes
@@ -118,8 +124,9 @@ Suggest as an extension to candidates, ask what would break (seeking & reloading
 ---
 
 ```python
-# Forward-only streaming
-
+# """
+# String replacements using forward-only streaming.
+# """
 def replace_all(subject, subject_length, replacements, output):
     buffer_length = max((len(search) for search, _ in replacements))
     buffer = [subject.read(1) for i in range(buffer_length)]
@@ -145,13 +152,13 @@ def replace_all(subject, subject_length, replacements, output):
             [next(source) for i in range(match[0] - 1)]
 ----
 *
-4:5 > Prepare matching buffer of N characters (N = longuest search string)
-7:8 > Prepare source buffer with subject characters + some extra to match at end of string
-10 > Outer loop iterates only once over source characters
-11:15 > Inner loop searches for a match and stores length + replacement value
-17:18 > Handle \"no match\" as a 1-character match replaced by itself
-20 > Output our best match
-22:25 > Shift matching buffer by the number of matched characters
+5:6 > Prepare matching buffer of N characters (N = longuest search string)
+8:9 > Prepare source buffer with subject characters + some extra to match at end of string
+11 > Outer loop iterates only once over source characters
+12:16 > Inner loop searches for a match and stores length + replacement value
+18:19 > Handle \"no match\" as a 1-character match replaced by itself
+21 > Output our best match
+23:26 > Shift matching buffer by the number of matched characters
 * > ...but complexity is still O(n*m)!
 ```
 
@@ -195,8 +202,9 @@ Ask candidates how to factorize redundant searches.
 ---
 
 ```javascript
-// Using a trie
-
+/**
+ * String replacements using a trie.
+ */
 const replace_all = (subject, root, output) => {
   let current = root;
   let pending = "";
@@ -223,11 +231,11 @@ const replace_all = (subject, root, output) => {
 };
 ----
 *
-4:5 > Initialize cursor at root node
-7:10 > Iterate over subject, save character and move to child node
-10:16 > Option 1: invalid transition, flush buffer and reset cursor
-10:18 > Option 2: valid transition but no replacement yet, move cursor
-10:24 > Option 3: replacement found, print it and reset cursor + buffer
+5:6 > Initialize cursor at root node
+8:11 > Iterate over subject, save character and move to child node
+11:17 > Option 1: invalid transition, flush buffer and reset cursor
+11:19 > Option 2: valid transition but no replacement yet, move cursor
+11:25 > Option 3: replacement found, print it and reset cursor + buffer
 * > ...but we're not there yet! 🐞
 ```
 
@@ -268,15 +276,16 @@ Action | Backtrack 5 characters? 😢
 ## ⛑️ Aho-Corasick to the rescue
 
 - Fallback to longest suffix on failure
-- Example with MACHINE, CHINA & INOVATE
+- Example: MACHINE, CHINA & INOVATE
 
 ![](./assets/aho-corasick.png)
 
 ---
 
 ```javascript
-// Build fallback connections for Aho-Corasick algorithm
-
+/// <Summary>
+/// Build fallback connections for Aho-Corasick algorithm.
+/// </Summary>
 void BuildFallbacksForNode(Node parent, string prefix)
 {
     foreach (KeyValuePair<char, Node> pair in parent.ChildNodes)
@@ -302,11 +311,11 @@ void BuildFallbacksForNode(Node parent, string prefix)
 BuildFallbacksForNode(RootNode, string.Empty);
 ----
 *
-3 > parent = node at "MACHI", prefix = "MACHI"
-5:8 > Process all possible transitions from parent node, e.g. "N"
-10:13, 18:19 > Search for "MACHIN", "ACHIN", "CHIN", "HIN", "IN" and "N" in tree
-14:17 > Connect "CHIN" to fallback node while dropping prefix "MA"
-21 > Repeat for every child node of current one
+4 > parent = node at "MACHI", prefix = "MACHI"
+6:9 > Process all possible transitions from parent node, e.g. "N"
+11:14, 19:20 > Search for "MACHIN", "ACHIN", "CHIN", "HIN", "IN" and "N" in tree
+15:19 > Connect "CHIN" to fallback node while dropping prefix "MA"
+22 > Repeat for every child node of current one
 * > Invoke on root node and our fallback graph is complete!
 ```
 
@@ -342,9 +351,40 @@ Jump distance | 1 | 2 | 3 | 4 | 6 | 8 | 9
 
 ---
 
+## ⌛ Constant-time hash compare
+
+- Search `DEF` in `ABCDEFGHI`
+- hash(`DEF`) = 7
+
+<Box align="left">
+  <code>
+A B C D E F G H I<br />
+&lt;-6-&gt;&nbsp;&lt;-7-&gt;<br />
+&nbsp;&nbsp;&lt;-1-&gt;&nbsp;&lt;-4-&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;-8-&gt;&nbsp;&lt;-6-&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-3-&gt;&nbsp;&lt;-9-&gt;<br />
+  </code>
+</Box>
+
+```notes
+Use hash compare for early reject, need actual compare because of collisions. Worst case inefficient (e.g. AAAAA).
+```
+
+---
+
 ## 🎡 Rabin-Karp
 
-👷 FIXME
+Use rolling hash function for O(1) update:
+
+<Box>
+  <code>
+    hash(x[0..i]) = x<sub>0</sub>*10<sup>i</sup> + x<sub>1</sub>*10<sup>i-1</sup> + ... + x<sub>i</sub>*10<sup>0</sup><br />
+    =&gt;<br />
+    hash(x[1..i+1]) = hash(x[0..i])*10 - x<sub>0</sub>*10<sup>i</sup> + x<sub>i+1</sub>
+  </code>
+</Box>
+
+Search multiple strings using bloom filters
 
 ---
 
