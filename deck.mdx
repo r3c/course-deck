@@ -1,3 +1,4 @@
+import Box from "superbox"
 import { CodeSurfer } from "mdx-deck-code-surfer"
 import { Split } from "mdx-deck/layouts"
 import { dark } from "mdx-deck/themes"
@@ -19,8 +20,6 @@ Coding Interview Exercise
 
 ---
 
-import Box from 'superbox'
-
 ## 💢 Problem
 
 - Multiple search and replace in string:
@@ -36,7 +35,7 @@ import Box from 'superbox'
 
 - Frequent questions:
   - Overlaps e.g. `NAME` & `LASTNAME`
-  - Known delimiters e.g. `{{NAME}}`
+  - Known delimiters e.g. `$NAME`
 
 ---
 
@@ -64,13 +63,17 @@ string ReplaceAll(string text,
 ## 💭 Possible follow-ups
 
 - Memory:
-  - In-place replacements (dead end)
+  - In-place replacements
 - I/O:
-  - Forward-only streaming (transitional)
+  - Forward-only streaming
 - Performance:
-  - Text pre-processing (Knuth-Morris-Pratt)
+  - Subject pre-processing
 - All-in-one:
-  - Pattern pre-processing (many solutions)
+  - Search pre-processing
+
+```notes
+Memory: deadend, I/O: transitional, Performance: Knuth-Morris-Pratt, All-in-one: many solutions.
+```
 
 ---
 
@@ -80,28 +83,30 @@ string ReplaceAll(string text,
 
 ---
 
-## 📑 Text pre-processing
+## 📑 Subject pre-processing
 
-- Often suggested by candidates
-  - Common solution: split by "word"
-  - Variant: introduce delimiters e.g. `$TOKEN`
-- Can open discussions:
-  - Iterate over tokens without copying them
-  - Hash map lookups without cloning keys
-- KMP doesn't fit an 1 hour interview
+- Split by word or introduce `$TOKEN` delimiters
+- Knuth-Morris-Pratt doesn't fit 1h interview
+- Can open hash map usage discussions
 - Not worth spending time here otherwise
+
+```notes
+Split by word often suggested by candidates. Hash map discussions: lookups without cloning keys?
+```
 
 ---
 
 ## ➡️ Forward-only streaming
 
-- New constraint:
-  - Replacements in gigabytes strings
-- What would break:
-  - Seeking & reloading from disk
-  - Storing temporary result
-- Hint for candidate:
-  - Read every character only once?
+- Replacements in gigabytes strings
+- What would break?
+- How to workaround it?
+
+_Hint: replace everything in one pass_
+
+```notes
+Suggest as an extension to candidates, ask what would break (seeking & reloading from disk, storing temporary results), hint about reading characters one by one. Essentially swapping the two loops.
+```
 
 ---
 
@@ -143,10 +148,6 @@ def replace_all(text, text_length, replacements):
 * > ...but complexity is still O(n*m)!
 ```
 
-```notes
-Test
-```
-
 ---
 
 ## 📍️ Your score is ~3.0
@@ -155,14 +156,17 @@ Test
 
 ---
 
-## 🔎 Pattern pre-processing
+## 🔎 Search pre-processing
 
-- New constraint:
-  - Replacements list has lots of entries
-- What would break:
-  - Our O(n*m) complexity would hurt
-- Hint for candidate:
-  - Factorize redundant searches?
+- Replacements list has lots of entries
+- Our O(n*m) complexity would hurt
+- How to improve it?
+
+_Hint: `quantity` & `quartile`_
+
+```notes
+Ask candidates how to factorize redundant searches.
+```
 
 ---
 
@@ -210,11 +214,6 @@ const replace_all = (text, root) => {
     }
   }
 }
-
-replace_all("abcdef", {
-  "a": { "b": { "value": "x" } },
-  "e": { "f": { "value": "y" } }
-});
 ----
 *
 4:5 > Initialize cursor at root node
@@ -223,6 +222,10 @@ replace_all("abcdef", {
 10:18 > Option 2: valid transition but no replacement yet, move cursor
 10:24 > Option 3: replacement found, print it and reset cursor + buffer
 * > ...but we're not there yet! 🐞
+```
+
+```notes
+Options 1 and 3 have redundant code. Demo if possible.
 ```
 
 ---
@@ -238,20 +241,77 @@ Input | Pointer in tree
 <code>&nbsp;A<u>A</u>B</code> | <img src="./assets/ambiguous1.png" />
 <code>&nbsp;AA<u>B</u></code> | <img src="./assets/ambiguous1.png" />
 
+```notes
+Can be solved with backtracking or multiple cursors.
+```
+
+---
+
+## 🛣️ Backtracking is costly
+
+Action | Result
+---|---
+Search | `CHINA`, `MACHINE`
+Subject | <code>MACHINA</code>
+Match [0:5] | `MACHIN`<code>A</code>
+Action | Backtrack 5 characters? 😢
+
 ---
 
 ## ⛑️ Aho-Corasick
 
 - Fallback to longest suffix on failure
-- Example with MACHINE, CHINA & INO:
+- Example with MACHINE, CHINA & INOVATE
 
 ![](./assets/aho-corasick.png)
 
 ---
 
+```javascript
+// Build fallback connections for Aho-Corasick algorithm
+
+void BuildFallbacksForNode(Node parent, string prefix)
+{
+    foreach (KeyValuePair<char, Node> pair in parent.ChildNodes)
+    {
+        var node = pair.Value;
+        var path = prefix + pair.Key;
+
+        for (var i = 1; i <= path.Length; ++i)
+        {
+            if (TryFindNode(path.Substring(i), out var fallback))
+            {
+                node.FallbackDrop = path.Substring(0, i);
+                node.FallbackNode = fallback;
+
+                break;
+            }
+        }
+
+        BuildFallbacksForNode(pair.Value, path);
+    }
+}
+
+BuildFallbacksForNode(RootNode, string.Empty);
+----
+*
+3 > parent = node at "MACHI", prefix = "MACHI"
+5:8 > Process all possible transitions from parent node, e.g. "N"
+10:13, 18:19 > Search for "MACHIN", "ACHIN", "CHIN", "HIN", "IN" and "N" in tree
+14:17 > Connect "CHIN" to fallback node while dropping prefix "MA"
+21 > Repeat for every child node of current one
+* > Invoke on root node and our fallback graph is complete!
+```
+
+```notes
+Process parent node. For each child node matching given string, search for longuest possible match in the tree that ends with current string. Longuest suffix guarantees it's safe to drop prefix characters.
+```
+
+---
+
 ## ⏩ Boyer-Moore 1/3
 
-Pattern | `AAAAAA`
+Search | `AAAAAA`
 ---|---
 Subject | `BBBBBBBBBB`
 Start at | <code>BBBBB<u>B</u>BBBB</code>
