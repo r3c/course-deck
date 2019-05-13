@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "mdx-deck build --no-html deck.mdx",
     "start": "mdx-deck deck.mdx"
   },
   "author": "",
