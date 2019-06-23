@@ -1,0 +1,17 @@
+{
+  "name": "strings-replacements",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "mdx-deck build --no-html deck.mdx",
+    "start": "mdx-deck deck.mdx"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "code-surfer": "2.0.0-alpha.6",
+    "mdx-deck": "2.3.2",
+    "raw-loader": "3.0.0"
+  }
+}

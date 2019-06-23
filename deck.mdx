@@ -1,0 +1,337 @@
+import { CodeSurferLayout } from "code-surfer";
+export { nightOwlFull as theme } from "code-surfer/themes";
+
+import { Appear, Notes } from '@mdx-deck/components'
+
+# Writing shell scripts
+
+## that don't suck
+
+---
+
+## 🤷 Why so different?
+
+POSIX shell has a REPL-first design:
+
+<ul>
+  <Appear>
+    <li>No type: anything is string literal</li>
+    <li>No brace: invoke is default</li>
+    <li>No comma: space is field delimiter</li>
+    <li>No semicolon: CR is EOL separator</li>
+    <li>No thread: multi-process only</li>
+  </Appear>
+</ul>
+
+---
+
+<CodeSurferLayout>
+
+```clike
+// C#
+MatchContents(new [] {"/tmp/1", "/tmp/2"}, new MatchOptions {
+  Context = 5,
+  Output = MatchOutput.NameOnly
+})
+```
+
+```clike 1:8
+// C#
+MatchContents(new [] {"/tmp/1", "/tmp/2"}, new MatchOptions {
+  Context = 5,
+  Output = MatchOutput.NameOnly
+})
+
+// sh
+grep -C 5 -l /tmp/1 /tmp/2
+```
+
+```bash 1:4
+grep \
+  -C 5 \
+  -l \
+  /tmp/1 /tmp/2
+```
+
+```bash 1 subtitle="Short names (what does 'grep' even means?)"
+grep \
+  -C 5 \
+  -l \
+  /tmp/1 /tmp/2
+```
+
+```bash 2[1:6] subtitle="Everything is a string (types are so overrated)"
+grep \
+  -C 5 \
+  -l \
+  /tmp/1 /tmp/2
+```
+
+```bash 2[1:6],4 subtitle="Convention-based named & positional arguments"
+grep \
+  -C 5 \
+  -l \
+  /tmp/1 /tmp/2
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- Backslash required because CR is delimiter
+- -C and 5 are strings
+- -C and -l are flags because they start with a "-"
+- 5 is an argument because it follows a flag
+- /tmp/1 /tmp/2 are positional arguments by default
+
+</Notes>
+
+---
+
+## 💥 And it's so wrong sometimes...
+
+---
+
+## 📜 Expansion traps
+
+- Expansion order is tricky
+- But quote removal is last step
+- Better use it everywhere!
+
+<Notes>
+
+- Order: `$var`, `$(cmd)`, `$((var+1))`, word split, `[01]*`, quote removal
+
+</Notes>
+
+---
+
+<CodeSurferLayout>
+
+```bash
+var=hello
+
+cat $var
+```
+
+```bash 1:3 subtitle="Oops my password 😓"
+var='*'
+
+cat $var
+```
+
+```bash 1:3 subtitle="cat: '*': No such file or directory 😌"
+var='*'
+
+cat "$var"
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- Quotes removal happens after filename expansion (globbing)
+
+</Notes>
+
+---
+
+<CodeSurferLayout>
+
+```bash
+var=hello
+
+rm $var
+```
+
+```bash 1:3 subtitle="Oops my filesystem 😭"
+var='-rf /'
+
+rm $var
+```
+
+```bash 1:3 subtitle="rm: unknown option -- 😅"
+var='-rf /'
+
+rm "$var"
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- Quotes removal happens after words splitting
+
+</Notes>
+
+---
+
+## ⛳ Flag traps
+
+- Quoting protects against expansion
+- But not against flag injections
+
+---
+
+<CodeSurferLayout>
+
+```bash 1:3 title="Use '--' to close flags list" subtitle="rm: unknown option -- 😅"
+var='-rf /'
+
+rm "$var"
+```
+
+```bash 1:3 title="Use '--' to close flags list" subtitle="rm: cannot remove '-rf /': No such file or directory 🤗"
+var='-rf /'
+
+rm -- "$var"
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- Works only on some commands e.g. not "echo".
+
+</Notes>
+
+---
+
+<CodeSurferLayout>
+
+```bash title="But '--' may not be available"
+dir=/opt/criteo/duplo
+
+find ~/.duplo/ "$dir" -name '*.config'
+```
+
+```bash 1:3 title="But '--' may not be available" subtitle="Oops my configuration 😰"
+dir=-delete
+
+find ~/.duplo/ "$dir" -name '*.config'
+```
+
+```bash 1:3 title="But '--' may not be available" subtitle="find: ‘./-delete’: No such file or directory 😤"
+dir=-delete
+
+find ~/.duplo/ ./"$dir" -name '*.config'
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- Doesn't work with absolute pathnames.
+
+</Notes>
+
+---
+
+## 🚀 Performance trap
+
+- Performance of similar scripts can vary a lot
+- Especially on Windows (cost of process create)
+
+---
+
+<CodeSurferLayout>
+
+```bash title="Counting processes" subtitle="Two processes"
+cat request.hive | hive
+```
+
+```bash title="Counting processes" subtitle="One process"
+< request.hive hive
+```
+
+</CodeSurferLayout>
+
+---
+
+<CodeSurferLayout>
+
+```bash title="Builtins and executables"
+for i in $(seq 500); do
+  test $i
+done
+```
+
+```bash 1:3 title="Builtins and executables" subtitle="What if..."
+for i in $(seq 500); do
+  /usr/bin/test $i
+done
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- Show output of `which test`
+- `time sh -c 'for i in $(seq 500); do test $i; done`
+
+</Notes>
+
+---
+
+<CodeSurferLayout>
+
+```bash title="Batch calls with find"
+find . \
+  -name '*.cs' \
+  -exec ./warrenize.sh '{}' ';'
+```
+
+```bash 1:3 title="Batch calls with find" subtitle="+ = pass multiple arguments"
+find . \
+  -name '*.cs' \
+  -exec ./warrenize.sh '{}' +
+```
+
+</CodeSurferLayout>
+
+<Notes>
+
+- `time sh -c 'find ~/Document/Work/Repository/verse -name "*.cs" -exec ./warrenize.sh "{}" ";"'`
+
+</Notes>
+
+---
+
+<CodeSurferLayout>
+
+```bash title="Batch calls with xargs"
+for filename in $(ls); do
+  chmod 644 -- "$filename"
+done
+```
+
+```bash title="Batch calls with xargs"
+ls | xargs chmod 644 --
+```
+
+</CodeSurferLayout>
+
+---
+
+## 🕵️ So many broken things
+
+Readings:
+
+- http://www.etalabs.net/sh_tricks.html
+- https://dwheeler.com/essays/filenames-in-shell.html
+
+---
+
+# 🔫 Have fun!
+
+---
+
+## Topics
+
+- interactive / TTY
+- getopt
+- functions
+- sub-shell / side effects / variables
+- heredoc pipe + read
+- debugging / set -x
+- interactive
