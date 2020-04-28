@@ -1,0 +1,475 @@
+import { CodeSurfer } from "code-surfer";
+import { nightOwl } from "@code-surfer/themes";
+import "prismjs/components/prism-csharp";
+
+export const theme = nightOwl;
+
+# Cottle v2.0.0
+
+## Fixing youth mistakes
+
+---
+
+## So what changed?
+
+---
+
+## Problem #1
+
+<CodeSurfer>
+
+```csharp
+abstract class Value
+{
+  bool AsBoolean { get; }
+  decimal AsNumber { get; }
+  string AsString { get; }
+}
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #1
+
+<CodeSurfer>
+
+```js title="Why System.Decimal in the first place?"
+You bought an {article.name} for {article.price}$.
+```
+
+```js title="Well it seemed like a good idea 🤔"
+You bought an {article.name} for {article.price}$.
+=>
+You bought an Apple for 0.30000000000000004$.
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #1
+
+### Quite a pain actually
+
+* Bad performance compared to `System.Double`
+* Requires casts everywhere
+* Formatting is template's responsibility
+
+---
+
+## Problem #1
+
+<CodeSurfer>
+
+```js title="Who needs System.Decimal anyway?"
+You bought an {article.name} for {format(article.price, "n:d2")}$.
+```
+
+```js title="😎"
+You bought an {article.name} for {format(article.price, "n:d2")}$.
+=>
+You bought an Apple for 0.30$.
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #1
+
+<CodeSurfer>
+
+```csharp title="So let's replace by System.Double..."
+class Value
+{
+  bool AsBoolean { get; }
+  decimal AsNumber { get; }
+  string AsString { get; }
+}
+```
+
+```csharp 4 title="...and pay the price of a breaking change 😓"
+class Value
+{
+  bool AsBoolean { get; }
+  double AsNumber { get; }
+  string AsString { get; }
+}
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #1
+
+Solved ✔️
+
+---
+
+## Problem #2
+
+<CodeSurfer>
+
+```csharp title="Use some Value class as base type"
+abstract class Value
+{
+  bool AsBoolean { get; }
+  double AsNumber { get; }
+  string AsString { get; }
+}
+```
+
+```csharp title="And happily inherit as needed"
+abstract class Value
+{
+  bool AsBoolean { get; }
+  double AsNumber { get; }
+  string AsString { get; }
+}
+
+class StringValue : Value
+{
+  bool AsBoolean => !string.IsNullOrEmpty(_value);
+  double AsNumber => double.TryParse(_value, out var number) ? number : double.NaN;
+  string AsString => _value;
+}
+
+class NumberValue : Value { /* ... */ }
+class FunctionValue : Value { /* ... */ }
+// And more...
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #2
+
+* Lots of child classes for `Value`
+* `VoidValue.Instance` vs null
+* Heap allocation even for a boolean value
+
+---
+
+## Problem #2
+
+### Cottle type `Value` is now a value type
+
+(who saw that coming?)
+
+---
+
+## Problem #2
+
+<CodeSurfer>
+
+```csharp
+readonly struct Value
+{
+  bool AsBoolean => /* ... */
+  double AsNumber => /* ... */
+  string AsString => /* ... */
+}
+```
+
+</CodeSurfer>
+
+There, I fixed it 🤠
+
+---
+
+## Problem #2
+
+<CodeSurfer>
+
+```csharp title="Less surprises with comparisons"
+default(Value) == new Value() == Value.Undefined
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #2
+
+Solved ✔️
+
+<Appear>
+
+...not quite.
+
+</Appear>
+
+---
+
+## Problem #2.1
+
+### No inheritance anymore 🤔
+
+* How to implement LazyValue?
+* How to implement ReflectionValue?
+* How to implement DuploColorAliasValue? 😱
+
+---
+
+## Problem #2.1
+
+<CodeSurfer>
+
+```csharp
+readonly struct Value
+{
+  bool _asBoolean;
+  double _asNumber;
+  string _asString;
+  // ...
+}
+```
+
+```csharp 4,10:16
+readonly struct Value
+{
+  bool _asBoolean;
+  IEvaluable _asEvaluable;  
+  double _asNumber;
+  string _asString;
+  // ...
+}
+
+interface IEvaluable
+{
+  bool AsBoolean { get; }
+  double AsNumber { get; }
+  string AsString { get; }
+  // ...
+}
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #2.1
+
+<CodeSurfer>
+
+```csharp
+readonly struct Value
+{
+  bool AsBoolean
+  {
+    get
+    {
+      switch (_type)
+      {
+        case ValueContent.Boolean:
+          return _boolean;
+
+        case ValueContent.Number:
+          return Math.Abs(_number) > double.Epsilon;
+
+        case ValueContent.String:
+          return !string.IsNullOrEmpty(_string);
+
+        // etc.
+      }
+    }
+  }
+}
+```
+
+```csharp 7:8
+readonly struct Value
+{
+  bool AsBoolean
+  {
+    get
+    {
+      if (_evaluable != null)
+        return _evaluable.AsBoolean;
+
+      switch (_type)
+      {
+        case ValueContent.Boolean:
+          return _boolean;
+
+        case ValueContent.Number:
+          return Math.Abs(_number) > double.Epsilon;
+
+        case ValueContent.String:
+          return !string.IsNullOrEmpty(_string);
+
+        // etc.
+      }
+    }
+  }
+}
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #2.1
+
+* Value type for simple types: bools, ints, 99% of instances
+* Implementations of `IEvaluable` for complex types
+
+### Best of both worlds?
+
+---
+
+## Problem #2.1
+
+Solved ✔️
+
+<Appear>
+
+...really?
+
+</Appear>
+
+---
+
+## Problem #2.1.1
+
+<CodeSurfer>
+
+```csharp title="Each and every value access takes an extra 'if'"
+if (_evaluable != null) // 1 jump
+  return _evaluable.AsBoolean;
+
+switch (_type) // 1 jump (hopefully)
+{
+  //
+}
+```
+
+</CodeSurfer>
+
+---
+
+### Problem #2.1.1
+
+<CodeSurfer>
+
+```csharp title="Abuse enums being backed by integers"
+switch (_type)
+{
+  case TrustMeIAmEvaluable: // Opaque magic constant
+    return _evaluable.AsBoolean;
+
+  case ValueContent.AsBoolean:
+    return _boolean;
+
+  // ...
+}
+```
+
+</CodeSurfer>
+
+---
+
+## Problem #2.1.1
+
+Solved ✔️
+
+---
+
+## Problem #2.2
+
+| Library         | Allocated bytes/run |
+| --------------- | ------------------- |
+| Cottle (before) | 4.87 KB             |
+| Cottle (after)  | 5.95 KB 😭           |
+| DotLiquid       | 69.4 KB 🤮           |
+| Fluid           | 2.49 KB 🤯           |
+| RazorLight      | 20.45 KB            |
+| Scriban         | 10.27 KB            |
+
+### Wasn't it supposed to _reduce_ allocations?
+
+---
+
+## Problem #2.2
+
+<CodeSurfer>
+
+```csharp title="What could have I possibly missed?"
+readonly struct Value
+{
+  readonly bool _boolean;
+  readonly IEvaluable _evaluable;
+  readonly IFunction _function;
+  readonly IMap _map;
+  readonly double _number;
+  readonly string _string;
+  readonly ValueContent _type;
+}
+
+Marshal.SizeOf<Value>() == 48; // 🍔🐄
+```
+
+</CodeSurfer>
+
+### Well, try again 🖕
+
+---
+
+## Solution #2.2
+
+### Explicit structure layout
+
+<CodeSurfer>
+
+```csharp
+readonly struct MyUnion
+{
+  readonly bool _boolean;
+
+  readonly double _number;
+}
+
+Marshal.SizeOf<MyUnion>() == 16;
+```
+
+```csharp 1,4,7,11
+[StructLayout(LayoutKind.Explicit)]
+readonly struct MyUnion
+{
+  [FieldOffset(0)]
+  readonly bool _boolean;
+
+  [FieldOffset(0)]
+  readonly double _number;
+}
+
+Marshal.SizeOf<MyUnion>() == 8;
+```
+
+</CodeSurfer>
+
+---
+
+## Solution #2.2
+
+* With reference types: 4.85 KB
+* With value types: 5.95 KB
+* With value types + explicit layout: 4.87 KB
+
+### That was close!
+
+---
+
+## Problem #2.2
+
+Solved ✔️
+
+---
+
+## Let's go for a MOAB NuGet upgrade!
+
+🧱🏄‍♂️
