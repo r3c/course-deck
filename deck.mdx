@@ -14,11 +14,9 @@ export const theme = nightOwl;
 
 ---
 
-## Problem #1
-
 <CodeSurfer>
 
-```csharp
+```csharp title="Problem #1"
 abstract class Value
 {
   bool AsBoolean { get; }
@@ -30,8 +28,6 @@ abstract class Value
 </CodeSurfer>
 
 ---
-
-## Problem #1
 
 <CodeSurfer>
 
@@ -59,8 +55,6 @@ You bought an Apple for 0.30000000000000004$.
 
 ---
 
-## Problem #1
-
 <CodeSurfer>
 
 ```js title="Who needs System.Decimal anyway?"
@@ -76,8 +70,6 @@ You bought an Apple for 0.30$.
 </CodeSurfer>
 
 ---
-
-## Problem #1
 
 <CodeSurfer>
 
@@ -110,6 +102,10 @@ Solved ✔️
 ---
 
 ## Problem #2
+
+### So you're using inheritance, hu? 😈
+
+---
 
 <CodeSurfer>
 
@@ -162,11 +158,18 @@ class FunctionValue : Value { /* ... */ }
 
 ---
 
-## Problem #2
-
 <CodeSurfer>
 
-```csharp
+```csharp title="Let's make it a value type then"
+class Value
+{
+  bool AsBoolean => /* ... */
+  double AsNumber => /* ... */
+  string AsString => /* ... */
+}
+```
+
+```csharp title="There, I fixed it 🤠"
 readonly struct Value
 {
   bool AsBoolean => /* ... */
@@ -177,11 +180,7 @@ readonly struct Value
 
 </CodeSurfer>
 
-There, I fixed it 🤠
-
 ---
-
-## Problem #2
 
 <CodeSurfer>
 
@@ -209,17 +208,16 @@ Solved ✔️
 
 ### No inheritance anymore 🤔
 
-* How to implement LazyValue?
-* How to implement ReflectionValue?
-* How to implement DuploColorAliasValue? 😱
+* Everything implemented in a single type
+* How to support LazyValue?
+* How to support ReflectionValue?
+* How to support DuploColorAliasValue? 😱
 
 ---
 
-## Problem #2.1
-
 <CodeSurfer>
 
-```csharp
+```csharp title="Take our plain data structure..."
 readonly struct Value
 {
   bool _asBoolean;
@@ -229,7 +227,7 @@ readonly struct Value
 }
 ```
 
-```csharp 4,10:16
+```csharp 4,10:16 title="And allow injection there"
 readonly struct Value
 {
   bool _asBoolean;
@@ -252,11 +250,9 @@ interface IEvaluable
 
 ---
 
-## Problem #2.1
-
 <CodeSurfer>
 
-```csharp
+```csharp title="Need to update getters"
 readonly struct Value
 {
   bool AsBoolean
@@ -281,7 +277,7 @@ readonly struct Value
 }
 ```
 
-```csharp 7:8
+```csharp 7:8 title="Shortcircuit for external implementations"
 readonly struct Value
 {
   bool AsBoolean
@@ -336,6 +332,10 @@ Solved ✔️
 
 ## Problem #2.1.1
 
+### Hurts performance a bit 😫
+
+---
+
 <CodeSurfer>
 
 ```csharp title="Each and every value access takes an extra 'if'"
@@ -344,20 +344,15 @@ if (_evaluable != null) // 1 jump
 
 switch (_type) // 1 jump (hopefully)
 {
-  //
+  case ValueContent.AsBoolean:
+    return _boolean;
+
+  // ...
 }
 ```
 
-</CodeSurfer>
-
----
-
-### Problem #2.1.1
-
-<CodeSurfer>
-
 ```csharp title="Abuse enums being backed by integers"
-switch (_type)
+switch (_type) // 1 jump (hopefully)
 {
   case TrustMeIAmEvaluable: // Opaque magic constant
     return _evaluable.AsBoolean;
@@ -394,11 +389,22 @@ Solved ✔️
 
 ---
 
-## Problem #2.2
-
 <CodeSurfer>
 
 ```csharp title="What could have I possibly missed?"
+readonly struct Value
+{
+  readonly bool _boolean;
+  readonly IEvaluable _evaluable;
+  readonly IFunction _function;
+  readonly IMap _map;
+  readonly double _number;
+  readonly string _string;
+  readonly ValueContent _type;
+}
+```
+
+```csharp title="Oops 🤐"
 readonly struct Value
 {
   readonly bool _boolean;
@@ -415,17 +421,11 @@ Marshal.SizeOf<Value>() == 48; // 🍔🐄
 
 </CodeSurfer>
 
-### Well, try again 🖕
-
 ---
-
-## Solution #2.2
-
-### Explicit structure layout
 
 <CodeSurfer>
 
-```csharp
+```csharp title="Remember good old C unions?"
 readonly struct MyUnion
 {
   readonly bool _boolean;
@@ -436,7 +436,7 @@ readonly struct MyUnion
 Marshal.SizeOf<MyUnion>() == 16;
 ```
 
-```csharp 1,4,7,11
+```csharp 1,4,7,11 title="Explicit structure layout"
 [StructLayout(LayoutKind.Explicit)]
 readonly struct MyUnion
 {
@@ -460,7 +460,7 @@ Marshal.SizeOf<MyUnion>() == 8;
 * With value types: 5.95 KB
 * With value types + explicit layout: 4.87 KB
 
-### That was close!
+### That was close! 😅
 
 ---
 
@@ -470,6 +470,16 @@ Solved ✔️
 
 ---
 
+## Performance?
+
+* v1.6.2: 6239 µs/op
+* v2.0.0: 5955 µs/op
+* => ~ -5% CPU usage
+
+### All good! 👍
+
+---
+
 ## Let's go for a MOAB NuGet upgrade!
 
-🧱🏄‍♂️
+🧱🏄‍
