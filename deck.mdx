@@ -10,6 +10,44 @@ export const theme = nightOwl;
 
 ---
 
+<CodeSurfer>
+
+```csharp 1:2 title="Background"
+var template = "Hello {name}, what a good day to {action}!";
+var document = Document.Create(template).DocumentOrThrow;
+
+var context = Context.CreateBuiltin(new Dictionary<Value, Value>
+{
+  ["name"] = "Sami",
+  ["action"] = "refactor textfit"
+});
+
+return document.Render(context);
+```
+
+```diff 4:8
+```
+
+```diff 10
+```
+
+```csharp 4,6:7
+var template = "Hello {name}, what a good day to {action}!";
+var document = Document.Create(template).DocumentOrThrow;
+
+var context = Context.CreateBuiltin(new Dictionary<Value, Value>
+{
+  [(Value)"name"] = (Value)"Sami",
+  [(Value)"action"] = (Value)"refactor textfit"
+});
+
+return document.Render(context);
+```
+
+</CodeSurfer>
+
+---
+
 ## So what changed?
 
 ---
