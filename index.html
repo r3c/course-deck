@@ -16,8 +16,212 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<h1>Render + Regex<br />=<br />💖</h1>
+					<p><em>A catastrophic backtracking story</em></p>
+				</section>
+
+				<section>
+					<h2>Performance drop over time</h2>
+					<p>FIXME: imagine a slowly increasing curve here, with legend saying "response time"</p>
+				</section>
+
+				<section>
+					<h2>Carl's perf dump, 3d uptime</h2>
+					<div class="r-stack">
+						<img src="picture-dump.png" />
+						<img class="fragment fade-in" src="picture-ouch.jpg" />
+					</div>
+				</section>
+
+				<section>
+					<h2>Offender: magic macros</h2>
+					<pre>
+						<code class="hljs language-csharp" data-trim data-line-numbers="|3-8|10-14|16-19|21-25|27-40|42-45">
+							class MagicMacroPreprocessor
+							{
+							    // NotEncoded macro = {something}
+							    string NotEncodedMacroStart = "(?&lt;!\\{)\\{";
+							    string NotEncodedMacroEnd = "\\}(?!\\})";
+							    // Encoded macro = %7Bsomething%7D
+							    string EncodedMacroStart = "(?&lt;encoded&gt;(?&lt;!%7B)%7B)";
+							    string EncodedMacroEnd = "%7D(?!%7D)";
+
+							    // Readability stuff
+							    string Else = "|";
+							    string Or = "|";
+							    string IfEncoded = "(?(encoded)";
+							    string EndIf = ")";
+
+							    // Expression = a + b * c
+							    string Identifier = "[a-zA-Z0-9_]+";
+							    string Operator = "(?: *[*/+-] *)?";
+							    string Expression = "(?:" + Operator + Identifier + ")+";
+
+							    // Trust me you don't want to know
+							    string ExdOrRalfOrVideo = "(?:((exd|ralf|video)\\.)?" + Identifier + ")";
+							    string AcdcNotEncoded = "acdc\\.([a-zA-Z0-9_\\.]+(:[^\\}]+)?)";
+							    string AcdcEncoded = "acdc\\.([a-zA-Z0-9_\\.]+%3A(.(?!%7D))*.)";
+							    string Acdc = IfEncoded + AcdcEncoded + Else + AcdcNotEncoded + EndIf;
+
+							    // Bundle the whole thing
+							    string MagicMacroNotEncoded =
+							        NotEncodedMacroStart +
+							        "(?&lt;payload&gt;" + Expression + Or +
+							        ExdOrRalfOrVideo + Or + Acdc + ")" +
+							        NotEncodedMacroEnd;
+							    string MagicMacroEncoded =
+							        EncodedMacroStart +
+							        "(?&lt;payload&gt;" + Identifier + Or +
+							        ExdOrRalfOrVideo + Or + Acdc + ")" +
+							        EncodedMacroEnd;
+							    string MagicMacroPattern =
+							        "(?:" + MagicMacroNotEncoded +
+							        ")|(?:" + MagicMacroEncoded + ")";
+
+							    Regex Matcher = new Regex(MagicMacroPattern,
+							        RegexOptions.Compiled |
+							        RegexOptions.CultureInvariant |
+							        RegexOptions.IgnoreCase);
+
+							    // ...
+							}
+						</code>
+					</pre>
+				</section>
+
+				<section>
+					<h2>Code instrumentation</h2>
+					<pre>
+						<code class="hljs language-csharp" data-trim data-line-numbers="|7,10-11">
+							string ConvertMagicMacrosToCottle(string mm)
+							{
+							    if (string.IsNullOrEmpty(mm))
+							        return string.Empty;
+
+							    var replacer = new MacroReplacer();
+							    var stopwatch = Stopwatch.StartNew();
+							    var result = Matcher.Replace(mm, replacer.Callback);
+
+							    if (stopwatch.ElapsedMilliseconds > 50)
+							        Log("Something really bad happened with: " + mm);
+
+							    return result;
+							}
+						</code>
+					</pre>
+				</section>
+
+				<section>
+					<h2>Code instrumentation</h2>
+					<img src="picture-empty.jpg" />
+				</section>
+
+				<section>
+					<h2>2nd try</h2>
+					<pre>
+						<code class="hljs language-csharp" data-trim data-line-numbers="|2|11,15,17">
+							Regex Matcher = new Regex(pattern, regexOptions,
+							    TimeSpan.FromMilliseconds(50));
+
+							string ConvertMagicMacrosToCottle(string mm)
+							{
+							    if (string.IsNullOrEmpty(mm))
+							        return string.Empty;
+
+							    var replacer = new MacroReplacer();
+
+							    try
+							    {
+							        return Matcher.Replace(mm, replacer.Callback);
+							    }
+							    catch (RegexMatchTimeoutException)
+							    {
+							        Log("Something really bad happened with: " + mm);
+							    }
+
+							    return mm;
+							}
+						</code>
+					</pre>
+				</section>
+
+
+				<section>
+					<h2>Interesting stuff</h2>
+					<p style="font-size: 80%;">
+						Bloom into spring with this Floral Notch Neck Short Sleeve Top! It features a flattering notch neckline and a floral print!  &lt;!--table {mso-displayed-decimal-separator:\\.; mso-displayed-thousand-separator:\\,;} @page {margin:.75in .7in .75in .7in; mso-header-margin:.3in; mso-footer-margin:.3in;} tr {mso-height-source:auto;} col {mso-width-source:auto;} br {mso-data-placement:same-cell;} td {padding-top:1px; padding-right:1px; padding-left:1px; mso-ignore:padding; color:black; font-size:12.0pt; font-weight:400; font-style:normal; text-decoration:none; font-family:Calibri, sans-serif; mso-font-charset:0; mso-number-format:General; text-align:general; vertical-align:bottom; border:none; mso-background-s
+					</p>
+				</section>
+
+				<section>
+					<h2>regex101.com to the rescue</h2>
+				</section>
+
+				<section>
+					<h2>Catastrophic what?</h2>
+					<ul>
+						<li class="fragment">
+							Regex: <code><span style="color: red;">x+</span><span style="color: cyan;">x+</span>y</code>
+						</li>
+						<li class="fragment">
+							Input: <code>xxxxxxxxxxxxxxxxxxxxxxxz</code>
+						</li>
+						<li class="fragment">
+							Try 1: <code><span style="color: red;">xxxxxxxxxxxxxxxxxxxxxx</span><span style="color: cyan;">x</span><strike>z</strike></code>
+							<ul>
+								<li>Fails after 24 steps</li>
+							</ul>
+						</li>
+						<li class="fragment">
+							Try 2: <code><span style="color: red;">xxxxxxxxxxxxxxxxxxxxx</span><span style="color: cyan;">xx</span><strike>z</strike></code>
+							<ul>
+								<li>Fails after 24 steps</li>
+							</ul>
+						</li>
+						<li class="fragment">Try 3: ... you see how it goes</li>
+					</ul>
+				</section>
+
+				<section>
+					<section>
+						<h2>Excellent CloudFlare post</h2>
+						<p>
+							<a href="https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/">https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/</a>
+						</p>
+						<p>
+							<code>
+								(?:(?:\"|'|\]|\}|\\|\d|(?:nan|infinity|true|false|null|undefined|symbol|math)|\`|\-|\+)+[)]*;?((?:\s|-|~|!|{}|\|\||\+)*<span class="fragment highlight-red">.*(?:.*</span>=.*)))
+							</code>
+						</p>
+					</section>
+					<section>
+						<img src="picture-matching-x-x.png" />
+						<pre style="white-space: pre-wrap;">null;+x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x=x</pre>
+					</section>
+				</section>
+
+				<section>
+					<h2>Troubleshoot with regex101.com</h2>
+				</section>
+
+				<section>
+					<h2>Takeaways</h2>
+					<ul>
+						<li class="fragment">
+							Regular expressions are easy to misuse
+							<ul>
+								<li><em>He comes</em>, etc. you know this already</li>
+							</ul>
+						</li>
+						<li class="fragment">
+							Non-trivial regex? Consider an alternative tool
+						</li>
+						<li class="fragment">
+							regex101.com: powerful tools + documentation
+						</li>
+					</ul>
+				</section>
 			</div>
 		</div>
 
