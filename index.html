@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Render + Regex = 💖</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
@@ -23,11 +23,11 @@
 
 				<section>
 					<h2>Performance drop over time</h2>
-					<p>FIXME: imagine a slowly increasing curve here, with legend saying "response time"</p>
+					<img src="picture-latency.png" />
 				</section>
 
 				<section>
-					<h2>Carl's perf dump, 3d uptime</h2>
+					<h2>Carl's dump, 3 days uptime</h2>
 					<div class="r-stack">
 						<img src="picture-dump.png" />
 						<img class="fragment fade-in" src="picture-ouch.jpg" />
@@ -92,33 +92,31 @@
 
 				<section>
 					<h2>Code instrumentation</h2>
-					<pre>
-						<code class="hljs language-csharp" data-trim data-line-numbers="|7,10-11">
-							string ConvertMagicMacrosToCottle(string mm)
-							{
-							    if (string.IsNullOrEmpty(mm))
-							        return string.Empty;
+					<div class="r-stack">
+						<pre>
+							<code class="hljs language-csharp" data-trim data-line-numbers="|7,10-11">
+								string ConvertMagicMacrosToCottle(string mm)
+								{
+								    if (string.IsNullOrEmpty(mm))
+								        return string.Empty;
 
-							    var replacer = new MacroReplacer();
-							    var stopwatch = Stopwatch.StartNew();
-							    var result = Matcher.Replace(mm, replacer.Callback);
+								    var replacer = new MacroReplacer();
+								    var stopwatch = Stopwatch.StartNew();
+								    var result = Matcher.Replace(mm, replacer.Callback);
 
-							    if (stopwatch.ElapsedMilliseconds > 50)
-							        Log("Something really bad happened with: " + mm);
+								    if (stopwatch.ElapsedMilliseconds > 50)
+								        Log("Something really bad happened with: " + mm);
 
-							    return result;
-							}
-						</code>
-					</pre>
+								    return result;
+								}
+							</code>
+						</pre>
+						<img class="fragment fade-in" src="picture-empty.jpg" />
+					</div>
 				</section>
 
 				<section>
-					<h2>Code instrumentation</h2>
-					<img src="picture-empty.jpg" />
-				</section>
-
-				<section>
-					<h2>2nd try</h2>
+					<h2>Same player shoot again</h2>
 					<pre>
 						<code class="hljs language-csharp" data-trim data-line-numbers="|2|11,15,17">
 							Regex Matcher = new Regex(pattern, regexOptions,
@@ -149,9 +147,10 @@
 
 				<section>
 					<h2>Interesting stuff</h2>
-					<p style="font-size: 80%;">
+					<p style="font-size: 60%;">
 						Bloom into spring with this Floral Notch Neck Short Sleeve Top! It features a flattering notch neckline and a floral print!  &lt;!--table {mso-displayed-decimal-separator:\\.; mso-displayed-thousand-separator:\\,;} @page {margin:.75in .7in .75in .7in; mso-header-margin:.3in; mso-footer-margin:.3in;} tr {mso-height-source:auto;} col {mso-width-source:auto;} br {mso-data-placement:same-cell;} td {padding-top:1px; padding-right:1px; padding-left:1px; mso-ignore:padding; color:black; font-size:12.0pt; font-weight:400; font-style:normal; text-decoration:none; font-family:Calibri, sans-serif; mso-font-charset:0; mso-number-format:General; text-align:general; vertical-align:bottom; border:none; mso-background-s
 					</p>
+					<img src="picture-ah.png" />
 				</section>
 
 				<section>
@@ -160,27 +159,28 @@
 
 				<section>
 					<h2>Catastrophic what?</h2>
-					<ul>
-						<li class="fragment">
-							Regex: <code><span style="color: red;">x+</span><span style="color: cyan;">x+</span>y</code>
-						</li>
-						<li class="fragment">
-							Input: <code>xxxxxxxxxxxxxxxxxxxxxxxz</code>
-						</li>
-						<li class="fragment">
-							Try 1: <code><span style="color: red;">xxxxxxxxxxxxxxxxxxxxxx</span><span style="color: cyan;">x</span><strike>z</strike></code>
-							<ul>
-								<li>Fails after 24 steps</li>
-							</ul>
-						</li>
-						<li class="fragment">
-							Try 2: <code><span style="color: red;">xxxxxxxxxxxxxxxxxxxxx</span><span style="color: cyan;">xx</span><strike>z</strike></code>
-							<ul>
-								<li>Fails after 24 steps</li>
-							</ul>
-						</li>
-						<li class="fragment">Try 3: ... you see how it goes</li>
-					</ul>
+					<table>
+						<tr class="fragment">
+							<td>Regex</td>
+							<td><code><span style="color: indianred;">x+</span><span style="color: cornflowerblue;">x+</span>y</code></td>
+						</tr>
+						<tr class="fragment">
+							<td>Input</td>
+							<td><code>xxxxxxxxxxxxxxxxxxxxxxxz</code></td>
+						</tr>
+						<tr class="fragment">
+							<td>Try #1</td>
+							<td><code><span style="color: indianred;">xxxxxxxxxxxxxxxxxxxxxx</span><span style="color: cornflowerblue;">x</span><s>z</s></code><br />(fails after 24 steps)</td>
+						</tr>
+						<tr class="fragment">
+							<td>Try #2</td>
+							<td><code><span style="color: indianred;">xxxxxxxxxxxxxxxxxxxxx</span><span style="color: cornflowerblue;">xx</span><s>z</s></code><br />(fails after 24 steps)</td>
+						</tr>
+						<tr class="fragment">
+							<td>Try #3</td>
+							<td>...you see how it goes<br />(O(n<sup>2</sup>) complexity)</td>
+						</tr>
+					</table>
 				</section>
 
 				<section>
@@ -190,8 +190,12 @@
 							<a href="https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/">https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/</a>
 						</p>
 						<p>
-							<code>
-								(?:(?:\"|'|\]|\}|\\|\d|(?:nan|infinity|true|false|null|undefined|symbol|math)|\`|\-|\+)+[)]*;?((?:\s|-|~|!|{}|\|\||\+)*<span class="fragment highlight-red">.*(?:.*</span>=.*)))
+							<code style="white-space: pre-line;">
+								(?:(?:\"|'|\]|\}|\\|\d|
+								(?:nan|infinity|true|false|null|
+								undefined|symbol|math)|
+								\`|\-|\+)+[)]*;?
+								((?:\s|-|~|!|{}|\|\||\+)*<span class="fragment highlight-red">.*(?:.*</span>=.*)))
 							</code>
 						</p>
 					</section>
