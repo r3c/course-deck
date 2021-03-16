@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>f(x) = 🎵</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+
+		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>f(x) = 🎵</h1>
+					<p><em>A journey through music &amp; spreadsheets</em></p>
+				</section>
+
+				<section>
+					<div style="display: flex; align-items: center;">
+						<div class="fragment" data-fragment-index="2" style="flex: 1;">
+							<img alt="speaker" src="./image/speaker.svg" />
+							<legend>Speaker</legend>
+						</div>
+						<div class="fragment" data-fragment-index="1" style="flex: 2;">
+							<img alt="wave" src="./image/wave.png" />
+							<legend>Air vibration</legend>
+						</div>
+						<div style="flex: 1">
+							<img alt="ear" src="./image/ear.png" />
+							<legend>Perception</legend>
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<div style="display: flex; align-items: center;">
+						<div>
+							<div class="r-stack">
+								<div class="fragment fade-out" data-fragment-index="1">
+									<img alt="speaker" src="./image/speaker-schema.png" />
+								</div>
+								<div class="fragment fade-in" data-fragment-index="1">
+									<img alt="speaker" src="./image/speaker-schema-animated.gif" />
+								</div>
+							</div>
+						</div>
+						<div style="flex: 1;" class="fragment fade-in" data-fragment-index="1">
+							<img alt="wave" src="./image/speaker-wave.gif" style="width: 100%;" />
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<img alt="tuning fork" src="./image/tuning-fork.png" />
+					<legend>A-440 tuning fork = 440hz</legend>
+				</section>
+
+				<section>
+					<div class="r-stack">
+						<div class="fragment fade-out" data-fragment-index="1">
+							<img alt="continuous wave" src="./image/wave-continuous.png" />
+							<legend><em>f(t) = sin(440t × 2π)</em></legend>
+						</div>
+						<div class="fragment" data-fragment-index="1">
+							<img alt="sampled wave" src="./image/wave-sampled.png" />
+							<legend>wave[i] = Math.sin(i * 440 * Math.PI * 2 / 44100)</legend>
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<img alt="wave format" src="./image/wave-format.gif" />
+					<legend>Some binary format love</legend>
+				</section>
+
+				<section>
+					<h2>Excel time!</h2>
+					<h2>📈</h2>
+				</section>
+
+				<section>
+					<div class="r-stack">
+						<div>
+							<div class="fragment fade-out" data-fragment-index="1">
+								<img alt="demo" src="./image/resampling-00-original.png" />
+								<legend>Original sample (theoretical)</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="1">
+							<div class="fragment fade-out" data-fragment-index="2">
+								<img alt="demo" src="./image/resampling-01-sample-frequency.png" />
+								<legend>Apply some sampling</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="2">
+							<div class="fragment fade-out" data-fragment-index="3">
+								<img alt="demo" src="./image/resampling-02-sample-preview.png" />
+								<legend>Keep sampled values</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="3">
+							<div class="fragment fade-out" data-fragment-index="4">
+								<img alt="demo" src="./image/resampling-03-sample-result.png" />
+								<legend>Store the result</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="4">
+							<div class="fragment fade-out" data-fragment-index="5">
+								<img alt="demo" src="./image/resampling-04-scale.png" />
+								<legend>Scale sample using nearest interpolation</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="5">
+							<div class="fragment fade-out" data-fragment-index="6">
+								<img alt="demo" src="./image/resampling-05-nearest.png" />
+								<legend>Locate nearest neighbor</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="6">
+							<div class="fragment fade-out" data-fragment-index="7">
+								<img alt="demo" src="./image/resampling-06-nearest-result.png" />
+								<legend>Use result point at each tick</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="7">
+							<div class="fragment fade-out" data-fragment-index="8">
+								<img alt="demo" src="./image/resampling-07-nearest-error.png" />
+								<legend>Error vs theoretical sample scaled</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="8">
+							<div class="fragment fade-out" data-fragment-index="9">
+								<img alt="demo" src="./image/resampling-04-scale.png" />
+								<legend>Scale sample using linear interpolation</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="9">
+							<div class="fragment fade-out" data-fragment-index="10">
+								<img alt="demo" src="./image/resampling-08-linear.png" />
+								<legend>Linear function between each point</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="10">
+							<div class="fragment fade-out" data-fragment-index="11">
+								<img alt="demo" src="./image/resampling-09-linear-result.png" />
+								<legend>Use result point at each tick</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="11">
+							<div class="fragment fade-out" data-fragment-index="12">
+								<img alt="demo" src="./image/resampling-10-linear-error.png" />
+								<legend>Error vs theoretical sample scaled</legend>
+							</div>
+						</div>
+						<div class="fragment" data-fragment-index="12">
+							<img alt="demo" src="./image/resampling-11-bench.png" />
+							<legend>Nearest vs linear sampling</legend>
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<h2>Excel time!</h2>
+					<h2>🎼</h2>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+				transition: 'convex'
+			});
+		</script>
+	</body>
+</html>
